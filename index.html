@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#243b35">
+<title>Minhas Compras 🛒</title>
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+:root{--bg:#f4f5ef;--card:#fff;--ink:#23352f;--muted:#78847d;--green:#315c4c;--mint:#e4eee7;--line:#e5e9e2;--accent:#d6a65d}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px system-ui,-apple-system,Segoe UI,sans-serif}
+header{background:var(--green);color:white;padding:26px 20px 22px;border-radius:0 0 24px 24px}
+header small{opacity:.8;letter-spacing:.08em;text-transform:uppercase;font-size:11px}h1{font-size:27px;margin:5px 0 4px}header p{margin:0;color:#e3ece6;font-size:14px}
+main{max-width:620px;margin:auto;padding:18px 16px 40px}.tabs{display:flex;gap:8px;margin:0 0 16px}.tabs button{flex:1;border:0;border-radius:12px;padding:12px 8px;background:#e6eae3;color:var(--ink);font-weight:650}.tabs button.active{background:var(--green);color:white}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:17px;margin:0 0 14px;box-shadow:0 4px 16px #263b3010}
+h2{font-size:18px;margin:0 0 14px}label{display:block;font-size:13px;color:var(--muted);margin:10px 0 5px}input{width:100%;padding:13px;border:1px solid #dce2da;border-radius:11px;background:#fff;font:inherit;color:var(--ink);min-width:0}input:focus{outline:2px solid #b9d2c2;border-color:var(--green)}
+.grid{display:grid;grid-template-columns:1fr 110px;gap:10px}.btn{border:0;border-radius:12px;background:var(--green);color:white;padding:13px 16px;font-weight:700;font:inherit;cursor:pointer}.btn.secondary{background:var(--mint);color:var(--green)}.btn.danger{background:#f8e9e6;color:#9c4438}.full{width:100%;margin-top:12px}
+.item{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}.item:last-child{border:0}.item-main{flex:1;min-width:0}.item-name{font-weight:650;overflow-wrap:anywhere}.sub{font-size:12px;color:var(--muted);margin-top:2px}.item-actions{display:flex;gap:6px}.iconbtn{border:0;border-radius:9px;padding:8px 10px;background:var(--mint);color:var(--green);font-size:15px}.empty{text-align:center;color:var(--muted);padding:22px 8px;font-size:14px}.stat{display:flex;justify-content:space-between;align-items:center;padding:8px 0}.stat strong{font-size:20px}.notice{background:#fff4df;border:1px solid #f0dfbd;color:#77551f;border-radius:12px;padding:12px;font-size:13px;margin-bottom:12px}.muted{color:var(--muted);font-size:13px}.hidden{display:none!important}.row{display:flex;gap:8px;align-items:center}.row>*{flex:1}.price{width:112px}.check{width:19px;height:19px;accent-color:var(--green)}
+footer{text-align:center;color:var(--muted);font-size:11px;padding:12px}
+</style>
+</head>
+<body>
+<header><small>Organize sua casa</small><h1>Minhas Compras 🛒</h1><p>Sua lista de compras, sempre à mão.</p></header>
+<main>
+<nav class="tabs"><button class="active" data-tab="add">Adicionar</button><button data-tab="list">Minha lista <span id="countTab"></span></button><button data-tab="plan">Planejar</button></nav>
+<section id="add">
+<div class="card"><h2>Adicionar produto</h2>
+<label for="name">Nome do produto</label><input id="name" placeholder="Ex.: arroz" maxlength="60">
+<div class="grid"><div><label for="qty">Quantidade</label><input id="qty" placeholder="Ex.: 2 kg" maxlength="30"></div><div><label for="price">Preço (R$)</label><input id="price" type="number" min="0" step=".01" placeholder="Opcional"></div></div>
+<button class="btn full" id="addBtn">Adicionar à lista</button></div>
+<div class="card"><h2>Resumo</h2><div class="stat"><span class="muted">Produtos na lista</span><strong id="summaryCount">0</strong></div><div class="stat"><span class="muted">Total estimado</span><strong id="summaryTotal">R$ 0,00</strong></div><p class="muted">Os preços são opcionais. Informe-os para acompanhar uma estimativa.</p></div>
+</section>
+<section id="list" class="hidden">
+<div id="sevenNotice" class="notice hidden">Sua lista chegou a 7 produtos. Confira se está tudo certo antes da compra!</div>
+<div class="card"><div class="row"><h2 style="margin:0;flex:1">Minha lista de compras</h2><button class="btn secondary" id="clearDone">Limpar marcados</button></div><div id="items"></div><button class="btn danger full" id="clearAll">Apagar toda a lista</button></div>
+</section>
+<section id="plan" class="hidden">
+<div class="card"><h2>Dia da compra</h2><label for="buyday">Escolha o dia do mês</label><input id="buyday" type="number" min="1" max="31" placeholder="Ex.: 5"><button class="btn full" id="saveDay">Salvar dia da compra</button><p class="muted" id="dayInfo">Você ainda não definiu o dia da compra.</p></div>
+<div class="card"><h2>Estimativa de gastos</h2><div class="stat"><span class="muted">Soma dos preços informados</span><strong id="planTotal">R$ 0,00</strong></div><p class="muted">É uma estimativa baseada nos preços que você cadastrar; valores reais podem mudar.</p></div>
+</section>
+<footer>Seus dados ficam salvos neste dispositivo.</footer>
+</main>
+<script>
+const KEY='minhasCompras.v1';
+let state={items:[],buyday:''};
+try{state={...state,...JSON.parse(localStorage.getItem(KEY)||'{}')}}catch(e){}
+const $=id=>document.getElementById(id);
+const money=n=>Number(n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+function save(){localStorage.setItem(KEY,JSON.stringify(state));render()}
+function total(){return state.items.reduce((s,x)=>s+(Number(x.price)||0),0)}
+function render(){
+ $('countTab').textContent=state.items.length?`(${state.items.length})`:'';
+ $('summaryCount').textContent=state.items.length;
+ $('summaryTotal').textContent=money(total());$('planTotal').textContent=money(total());
+ $('sevenNotice').classList.toggle('hidden',state.items.length<7);
+ $('items').innerHTML='';
+ if(!state.items.length){$('items').innerHTML='<div class="empty">Sua lista está vazia.<br>Adicione produtos na aba “Adicionar”.</div>'}
+ state.items.forEach((x,i)=>{
+  const div=document.createElement('div');div.className='item';
+  const check=document.createElement('input');check.type='checkbox';check.className='check';check.checked=!!x.done;check.setAttribute('aria-label','Marcar como comprado');check.onchange=()=>{x.done=check.checked;save()};
+  const main=document.createElement('div');main.className='item-main';
+  const nm=document.createElement('div');nm.className='item-name';nm.textContent=x.name;
+  const sub=document.createElement('div');sub.className='sub';sub.textContent=[x.qty,x.price?money(x.price):''].filter(Boolean).join(' · ')||'Quantidade/preço não informados';
+  main.append(nm,sub);const del=document.createElement('button');del.className='iconbtn';del.textContent='Excluir';del.onclick=()=>{state.items.splice(i,1);save()};
+  div.append(check,main,del);$('items').append(div);
+ });
+ $('buyday').value=state.buyday||'';
+ $('dayInfo').textContent=state.buyday?`Dia mensal escolhido: ${state.buyday}. O app mostra essa configuração; os lembretes automáticos dependem de notificações do navegador.`:'Você ainda não definiu o dia da compra.';
+}
+function tab(name){document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));['add','list','plan'].forEach(x=>$(x).classList.toggle('hidden',x!==name));}
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>tab(b.dataset.tab));
+$('addBtn').onclick=()=>{const name=$('name').value.trim();if(!name){$('name').focus();return}const qty=$('qty').value.trim();const p=$('price').value;state.items.push({name,qty,price:p===''?0:Number(p),done:false});$('name').value='';$('qty').value='';$('price').value='';save();tab('list')};
+$('clearDone').onclick=()=>{state.items=state.items.filter(x=>!x.done);save()};
+$('clearAll').onclick=()=>{if(confirm('Apagar todos os produtos da lista?')){state.items=[];save()}};
+$('saveDay').onclick=()=>{const d=Number($('buyday').value);if(!Number.isInteger(d)||d<1||d>31){alert('Digite um dia entre 1 e 31.');return}state.buyday=d;save();alert('Dia da compra salvo!')};
+render();
+if('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('./sw.js').catch(()=>{});
+</script>
+</body></html>
