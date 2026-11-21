@@ -1,0 +1,13 @@
+# Minhas Compras 🛒 — primeira versão
+
+Esta é uma versão web em formato de aplicativo (PWA). Inclui:
+- adicionar produtos com nome, quantidade e preço opcional;
+- lista com marcação de comprado e exclusão;
+- total estimado dos preços informados;
+- aviso quando a lista chega a 7 produtos;
+- configuração do dia mensal de compra;
+- armazenamento local no dispositivo.
+
+## Importante sobre instalação Android
+Este pacote ainda não é um APK. Para instalar como PWA, os arquivos precisam estar publicados em um endereço HTTPS. Depois, abra o endereço no Chrome do Android e escolha “Instalar app” ou “Adicionar à tela inicial”.
+O dia da compra é salvo, mas esta primeira versão ainda não agenda notificações automáticas.
